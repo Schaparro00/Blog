@@ -4,20 +4,20 @@
 
     <form @submit.prevent="submitBlog" class="blog-form">
       <div class="form-group">
-        <label for="name">Nombre de la Publicación</label>
+        <label for="title">Título de la Publicación</label>
         <input
-          id="name"
-          v-model="form.name"
+          id="title"
+          v-model="form.title"
           type="text"
           required
         />
       </div>
 
       <div class="form-group">
-        <label for="description">Descripción</label>
+        <label for="content">Contenido</label>
         <textarea
-          id="description"
-          v-model="form.description"
+          id="content"
+          v-model="form.content"
           required
         ></textarea>
       </div>
@@ -40,42 +40,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { reactive } from 'vue'
 import { useBlogStore } from '../stores/blogStore'
 import { useRouter } from 'vue-router'
 
 const blogStore = useBlogStore()
-const { addBlog, loading, error } = blogStore
+const { createPost, loading, error } = blogStore
 const router = useRouter()
 
 const form = reactive({
-  name: '',
-  description: '',
-  image: null as File | null
+  title: '',
+  content: '',
+  image: undefined as File | undefined
 })
 
 const handleImageChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
     form.image = target.files[0]
+  } else {
+    form.image = undefined
   }
 }
 
 const submitBlog = async () => {
-  if (!form.name.trim() || !form.description.trim()) return
+  if (!form.title.trim() || !form.content.trim()) return
 
   try {
-    const blogData = new FormData()
-    blogData.append('name', form.name)
-    blogData.append('description', form.description)
-    if (form.image) {
-      blogData.append('image', form.image)
-    }
-
-    await addBlog(blogData)
+    await createPost(form)
     router.push('/')
   } catch (err) {
-    console.error('Error creating blog:', err)
+    console.error('Error creating post:', err)
   }
 }
 </script>
